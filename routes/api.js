@@ -7,6 +7,8 @@ connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
 });
 
+Schema.Types.String.checkRequired((v) => typeof v === "string");
+
 const projectSchema = new Schema({
   project: {
     type: String,
@@ -36,14 +38,17 @@ const issueSchema = new Schema({
   assigned_to: {
     type: String,
     default: "",
+    required: true,
   },
   open: {
     type: Boolean,
     default: true,
+    required: true,
   },
   status_text: {
     type: String,
     default: "",
+    required: true,
   },
   project_id: Types.ObjectId,
 });
@@ -66,9 +71,44 @@ module.exports = function (app) {
       let project = req.params.project;
     })
 
-    .post(logRequest, function (req, res) {
+    .post(logRequest, async function (req, res) {
       let project = req.params.project;
       let issue = req.body;
+
+      if (!issue.issue_title || !issue.issue_text || !issue.created_by) {
+        res.status(200).json({ error: "required field(s) missing" });
+      }
+
+      let projectDoc = await Project.findOneAndUpdate(
+        { project: project },
+        { project: project },
+        { upsert: true, returnDocument: "after" }
+      );
+
+      let issueDoc = new Issue({
+        project_id: projectDoc._id,
+        issue_title: issue.issue_title,
+        issue_text: issue.issue_text,
+        created_by: issue.created_by,
+        created_on: new Date(),
+        updated_on: new Date(),
+        assigned_to: issue.assigned_to || "",
+        open: true,
+        status_text: issue.status_text,
+      });
+      await issueDoc.save();
+
+      res.status(200).json({
+        issue_title: issueDoc.issue_title,
+        issue_text: issueDoc.issue_text,
+        created_by: issueDoc.created_by,
+        created_on: issueDoc.created_on,
+        updated_on: issueDoc.updated_on,
+        assigned_to: issueDoc.assigned_to,
+        open: issueDoc.open,
+        status_text: issueDoc.status_text,
+        _id: issueDoc._id,
+      });
     })
 
     .put(function (req, res) {
