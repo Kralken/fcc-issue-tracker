@@ -72,12 +72,13 @@ module.exports = function (app) {
       let project = req.params.project;
     })
 
-    .post(logRequest, async function (req, res) {
+    .post(async function (req, res) {
       let project = req.params.project;
       let issue = req.body;
 
       if (!issue.issue_title || !issue.issue_text || !issue.created_by) {
         res.status(200).json({ error: "required field(s) missing" });
+        return;
       }
 
       let projectDoc = await Project.findOneAndUpdate(
