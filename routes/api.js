@@ -113,8 +113,56 @@ module.exports = function (app) {
       });
     })
 
-    .put(function (req, res) {
-      let project = req.params.project;
+    .put(logRequest, async function (req, res) {
+      let issue = req.body;
+      let allowedFields = [
+        "issue_title",
+        "issue_text",
+        "created_by",
+        "created_on",
+        "updated_on",
+        "assigned_to",
+        "open",
+        "status_text",
+      ];
+
+      if (!issue._id) {
+        res.json({ error: "missing _id" });
+        return;
+      }
+
+      let areThereValidFieldsToUpdate = false;
+      for (const element of Object.keys(issue)) {
+        if (allowedFields.includes(element)) {
+          areThereValidFieldsToUpdate = true;
+          break;
+        }
+      }
+
+      if (!areThereValidFieldsToUpdate) {
+        res.json({ _id: issue._id, error: "no update field(s) sent" });
+        return;
+      }
+
+      let issueDoc;
+      try {
+        issueDoc = await Issue.findOne({ _id: issue._id });
+      } catch (e) {
+        res.json({ error: "could not update", _id: issue._id });
+        return;
+      }
+
+      for (const [key, value] of Object.entries(issue)) {
+        if (allowedFields.includes(key)) {
+          if (value) {
+            issueDoc[key] = value;
+          }
+        }
+      }
+      issueDoc.updated_on = new Date();
+
+      await issueDoc.save();
+      res.status(200).json({ _id: issue._id, result: "successfully updated" });
     })
 
     .delete(function (req, res) {
