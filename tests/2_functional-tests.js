@@ -132,6 +132,7 @@ suite("Functional Tests", function () {
       .send({
         _id: issues[1],
         assigned_to: "updated name",
+        issue_title: "",
       })
       .end(function (err, res) {
         assert.equal(res.body._id, issues[1]);
