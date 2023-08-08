@@ -57,6 +57,7 @@ const Project = model("Project", projectSchema);
 const Issue = model("Issue", issueSchema);
 
 function logRequest(req, res, next) {
+  console.log("Method: " + req.method);
   console.log("Params: " + JSON.stringify(req.params));
   console.log("Query: " + JSON.stringify(req.query));
   console.log("Body: " + JSON.stringify(req.body));
