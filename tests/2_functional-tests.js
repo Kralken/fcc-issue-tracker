@@ -78,14 +78,15 @@ suite("Functional Tests", function () {
         assert.equal(res.status, 200, "status should be 200");
         assert.equal(
           res.body.issue_title,
-          "Test issue title",
+          "Test issue title 2",
           "issue title should be correct"
         );
         assert.equal(
           res.body.issue_text,
-          "this is where the issue test will appear",
+          "this is where the issue test will appear 2",
           "issue text should be correct"
         );
+        assert.equal(res.body.created_by, "test_created_user 2");
         assert.isTrue(res.body.open, "issue should be open by default");
         assert.isTrue(
           isValidObjectId(res.body._id),
