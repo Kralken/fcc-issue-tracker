@@ -213,7 +213,55 @@ suite("Functional Tests", function () {
   // View issues on a project: GET request to /api/issues/{project}
   // View issues on a project with one filter: GET request to /api/issues/{project}
   // View issues on a project with multiple filters: GET request to /api/issues/{project}
-  // Delete an issue: DELETE request to /api/issues/{project}
   // Delete an issue with an invalid _id: DELETE request to /api/issues/{project}
+  test("DELETE request with invalid ID", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .delete("/api/issues/testapi")
+      .type("form")
+      .send({ _id: "invalidId" })
+      .end(function (err, res) {
+        assert.equal(res.body.error, "could not delete");
+        assert.equal(res.body._id, "invalidId");
+        done();
+      });
+  });
   // Delete an issue with missing _id: DELETE request to /api/issues/{project}
+  test("DELETE request without _id sent", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .delete("/api/issues/testapi")
+      .type("form")
+      .send({ issue_title: "test_issue_title" })
+      .end(function (err, res) {
+        assert.equal(res.body.error, "missing _id");
+        done();
+      });
+  });
+  // Delete an issue: DELETE request to /api/issues/{project}
+  test("valid DELETE request", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .delete("api/issues/testapi")
+      .type("form")
+      .send({ _id: issues[0] })
+      .end(function (err, res) {
+        assert.equal(res.body.result, "successfully deleted");
+        assert.equal(res.body._id, issues[0]);
+      });
+    chai
+      .request(server)
+      .keepOpen()
+      .delete("api/issues/testapi")
+      .type("form")
+      .send({ _id: issues[1] })
+      .end(function (err, res) {
+        assert.equal(res.body.result, "successfully deleted");
+        assert.equal(res.body._id, issues[1]);
+        done();
+      });
+  });
 });
