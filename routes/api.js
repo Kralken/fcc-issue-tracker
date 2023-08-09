@@ -17,59 +17,77 @@ const projectSchema = new Schema({
   },
 });
 
-const issueSchema = new Schema({
-  issue_title: {
-    type: String,
-    required: true,
+const issueSchema = new Schema(
+  {
+    issue_title: {
+      type: String,
+      required: true,
+    },
+    issue_text: {
+      type: String,
+      required: true,
+    },
+    created_on: {
+      type: Date,
+      required: true,
+    },
+    updated_on: Date,
+    created_by: {
+      type: String,
+      required: true,
+    },
+    assigned_to: {
+      type: String,
+      default: "",
+      required: true,
+    },
+    open: {
+      type: Boolean,
+      default: true,
+      required: true,
+    },
+    status_text: {
+      type: String,
+      default: "",
+      required: true,
+    },
+    project_id: Types.ObjectId,
   },
-  issue_text: {
-    type: String,
-    required: true,
-  },
-  created_on: {
-    type: Date,
-    required: true,
-  },
-  updated_on: Date,
-  created_by: {
-    type: String,
-    required: true,
-  },
-  assigned_to: {
-    type: String,
-    default: "",
-    required: true,
-  },
-  open: {
-    type: Boolean,
-    default: true,
-    required: true,
-  },
-  status_text: {
-    type: String,
-    default: "",
-    required: true,
-  },
-  project_id: Types.ObjectId,
-});
+  { strictQuery: true }
+);
 
 const Project = model("Project", projectSchema);
 const Issue = model("Issue", issueSchema);
 
-function logRequest(req, res, next) {
-  console.log("Method: " + req.method);
-  console.log("Params: " + JSON.stringify(req.params));
-  console.log("Query: " + JSON.stringify(req.query));
-  console.log("Body: " + JSON.stringify(req.body));
-  next();
-}
+// function logRequest(req, res, next) {
+//   console.log("Method: " + req.method);
+//   console.log("Params: " + JSON.stringify(req.params));
+//   console.log("Query: " + JSON.stringify(req.query));
+//   console.log("Body: " + JSON.stringify(req.body));
+//   next();
+// }
 
 module.exports = function (app) {
   app
     .route("/api/issues/:project")
 
-    .get(function (req, res) {
+    .get(async function (req, res) {
       let project = req.params.project;
+      let queryParams = req.query;
+
+      let projectDoc = await Project.findOne({ project: project });
+      if (!projectDoc) {
+        res.json([]);
+        return;
+      }
+      queryParams.project_id = projectDoc._id;
+      if (queryParams.open) {
+        queryParams.open = queryParams.open.toLowerCase() === "true";
+      }
+
+      let issues = await Issue.find(queryParams);
+
+      res.json(issues);
     })
 
     .post(async function (req, res) {
@@ -165,7 +183,7 @@ module.exports = function (app) {
       res.status(200).json({ _id: issue._id, result: "successfully updated" });
     })
 
-    .delete(logRequest, async function (req, res) {
+    .delete(async function (req, res) {
       if (!req.body._id) {
         res.json({ error: "missing _id" });
         return;
