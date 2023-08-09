@@ -165,7 +165,25 @@ module.exports = function (app) {
       res.status(200).json({ _id: issue._id, result: "successfully updated" });
     })
 
-    .delete(function (req, res) {
-      let project = req.params.project;
+    .delete(logRequest, async function (req, res) {
+      if (!req.body._id) {
+        res.json({ error: "missing _id" });
+        return;
+      }
+
+      let _id = req.body._id;
+
+      let issueDoc;
+      try {
+        issueDoc = await Issue.findOneAndDelete({ _id: _id });
+      } catch (e) {
+        res.json({ error: "could not delete", _id: _id });
+        return;
+      }
+      if (!issueDoc) {
+        res.json({ error: "could not delete", _id: _id });
+        return;
+      }
+      res.status(200).json({ result: "successfully deleted", _id: _id });
     });
 };
