@@ -113,7 +113,7 @@ module.exports = function (app) {
       });
     })
 
-    .put(logRequest, async function (req, res) {
+    .put(async function (req, res) {
       let issue = req.body;
       let allowedFields = [
         "issue_title",
