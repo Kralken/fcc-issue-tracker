@@ -245,7 +245,7 @@ suite("Functional Tests", function () {
     chai
       .request(server)
       .keepOpen()
-      .delete("api/issues/testapi")
+      .delete("/api/issues/testapi")
       .type("form")
       .send({ _id: issues[0] })
       .end(function (err, res) {
@@ -255,7 +255,7 @@ suite("Functional Tests", function () {
     chai
       .request(server)
       .keepOpen()
-      .delete("api/issues/testapi")
+      .delete("/api/issues/testapi")
       .type("form")
       .send({ _id: issues[1] })
       .end(function (err, res) {
