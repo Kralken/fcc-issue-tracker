@@ -170,6 +170,11 @@ module.exports = function (app) {
         return;
       }
 
+      if (!issueDoc) {
+        res.json({ error: "could not update", _id: issue._id });
+        return;
+      }
+
       for (const [key, value] of Object.entries(issue)) {
         if (allowedFields.includes(key)) {
           if (value) {
