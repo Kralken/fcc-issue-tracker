@@ -211,8 +211,60 @@ suite("Functional Tests", function () {
       });
   });
   // View issues on a project: GET request to /api/issues/{project}
+  test("GET request for a project", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .get("/api/issues/testapi")
+      .send()
+      .end(function (err, res) {
+        assert.equal(res.status, 200);
+        assert.equal(res.body.length, 2);
+        assert.property(res.body[0], "_id");
+        assert.property(res.body[0], "issue_title");
+        assert.property(res.body[0], "issue_text");
+        assert.property(res.body[0], "created_on");
+        assert.property(res.body[0], "updated_on");
+        assert.property(res.body[0], "created_by");
+        assert.property(res.body[0], "assigned_to");
+        assert.property(res.body[0], "open");
+        assert.property(res.body[0], "status_text");
+        done();
+      });
+  });
   // View issues on a project with one filter: GET request to /api/issues/{project}
+  test("GET request for a project with one filter field", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .get("/api/issues/testapi?open=true")
+      .send()
+      .end(function (err, res) {
+        assert.equal(res.status, 200);
+        assert.equal(res.body.length, 1);
+        assert.isTrue(res.body[0].open);
+        done();
+      });
+  });
   // View issues on a project with multiple filters: GET request to /api/issues/{project}
+  test("GET request for a project with multiple filter fields", function (done) {
+    chai
+      .request(server)
+      .keepOpen()
+      .get(
+        "/api/issues/testapi?issue_title=Test%20issue%20title%20-%20updated&created_by=test_created_user%20-%20updated&open=false&assigned_to=test_assigned_user%20-%20updated"
+      )
+      .send()
+      .end(function (err, res) {
+        assert.equal(res.status, 200);
+        assert.equal(res.body.issue_title, "Test issue title - updated");
+        assert.equal(
+          res.body.status_text,
+          "this is the current status - updated"
+        );
+        done();
+      });
+  });
   // Delete an issue with an invalid _id: DELETE request to /api/issues/{project}
   test("DELETE request with invalid ID", function (done) {
     chai
