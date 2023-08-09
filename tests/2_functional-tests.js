@@ -252,14 +252,14 @@ suite("Functional Tests", function () {
       .request(server)
       .keepOpen()
       .get(
-        "/api/issues/testapi?issue_title=Test%20issue%20title%20-%20updated&created_by=test_created_user%20-%20updated&open=false&assigned_to=test_assigned_user%20-%20updated"
+        "/api/issues/testapi?issue_title=Test%20issue%20title%20-%20updated&created_by=test_created_user%20-%20updated&open=false&assigned_to=test_assigned_user%20-%20updated&invalidproperty=invalid"
       )
       .send()
       .end(function (err, res) {
         assert.equal(res.status, 200);
-        assert.equal(res.body.issue_title, "Test issue title - updated");
+        assert.equal(res.body[0].issue_title, "Test issue title - updated");
         assert.equal(
-          res.body.status_text,
+          res.body[0].status_text,
           "this is the current status - updated"
         );
         done();
